@@ -1,0 +1,1395 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CineFlix - Film & Dizi Platformu</title>
+  <style>
+    :root {
+      --bg-color: #141414;
+      --card-bg: #1f1f1f;
+      --text-color: #ffffff;
+      --text-sub: #b3b3b3;
+      --accent: #e50914;
+      --border: #333333;
+      --admin-badge: #f5c518;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      padding-bottom: 20px;
+    }
+
+    header {
+      background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent);
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .logo {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: var(--accent);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .home-nav-btn {
+      background: #222;
+      color: #fff;
+      border: 1px solid var(--border);
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: bold;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-admin {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 0.8rem;
+      display: none;
+    }
+
+    .btn-user {
+      background: #222;
+      color: #fff;
+      border: 1px solid var(--border);
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    .type-tabs {
+      display: flex;
+      gap: 15px;
+      margin: 20px 0;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+    }
+
+    .tab-btn {
+      background: transparent;
+      color: var(--text-sub);
+      border: none;
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+      padding-bottom: 5px;
+    }
+
+    .tab-btn.active {
+      color: var(--text-color);
+      border-bottom: 3px solid var(--accent);
+    }
+
+    .filter-bar {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+
+    .search-input {
+      flex: 1;
+      padding: 12px 18px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: #fff;
+      outline: none;
+    }
+
+    .movies-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+      gap: 20px;
+    }
+
+    .movie-card {
+      background: var(--card-bg);
+      border-radius: 8px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.3s;
+      border: 1px solid var(--border);
+      position: relative;
+    }
+
+    .movie-card:hover {
+      transform: scale(1.04);
+    }
+
+    .movie-poster {
+      width: 100%;
+      height: 270px;
+      object-fit: cover;
+    }
+
+    .movie-details {
+      padding: 12px;
+    }
+
+    .movie-title {
+      font-size: 0.95rem;
+      font-weight: bold;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 6px;
+    }
+
+    .movie-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: var(--text-sub);
+    }
+
+    .lang-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(0, 0, 0, 0.75);
+      padding: 3px 6px;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      border: 1px solid var(--border);
+    }
+
+    .pagination {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin: 35px 0;
+    }
+
+    .page-btn {
+      background: var(--card-bg);
+      color: var(--text-sub);
+      border: 1px solid var(--border);
+      padding: 8px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .page-btn.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    .watch-view {
+      display: none;
+      max-width: 1000px;
+      margin: 20px auto;
+    }
+
+    .back-btn {
+      background: var(--card-bg);
+      color: #fff;
+      border: 1px solid var(--border);
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-bottom: 20px;
+      font-weight: bold;
+    }
+
+    /* KESİN ÇÖZÜMLÜ OYNATICI VE DOKUNMA ALANI */
+    .player-box {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: #000;
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 15px;
+      border: 1px solid var(--border);
+      position: relative;
+      pointer-events: auto !important;
+    }
+
+    .player-box iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+      position: relative;
+      z-index: 999;
+      pointer-events: auto !important;
+    }
+
+    .server-switcher {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .server-btn {
+      background: #222;
+      color: #fff;
+      border: 1px solid var(--border);
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 0.9rem;
+    }
+
+    .server-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .report-btn {
+      background: #e67e22;
+      color: #fff;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+
+    .seasons-container {
+      background: var(--card-bg);
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border: 1px solid var(--border);
+      display: none;
+    }
+
+    .season-title {
+      font-size: 1rem;
+      margin-bottom: 10px;
+      color: var(--accent);
+    }
+
+    .episodes-grid {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .ep-btn {
+      background: #111;
+      color: #fff;
+      border: 1px solid var(--border);
+      padding: 8px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+
+    .ep-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .movie-info-box {
+      background: var(--card-bg);
+      padding: 20px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      margin-bottom: 20px;
+    }
+
+    .comments-section {
+      background: var(--card-bg);
+      padding: 20px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    .comment-form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .comment-form textarea {
+      width: 100%;
+      padding: 10px;
+      background: #111;
+      border: 1px solid var(--border);
+      color: #fff;
+      border-radius: 6px;
+      outline: none;
+    }
+
+    .comment-card {
+      background: #111;
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 10px;
+      border: 1px solid var(--border);
+    }
+
+    .comment-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      margin-bottom: 6px;
+    }
+
+    .user-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    footer {
+      background: #0d0d0d;
+      border-top: 1px solid var(--border);
+      margin-top: 60px;
+      padding: 40px 20px 20px 20px;
+      color: var(--text-sub);
+    }
+
+    .footer-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 30px;
+      margin-bottom: 30px;
+    }
+
+    .footer-section h4 {
+      color: #fff;
+      margin-bottom: 12px;
+      font-size: 1.1rem;
+    }
+
+    .footer-section p {
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    .footer-bottom {
+      text-align: center;
+      padding-top: 20px;
+      border-top: 1px solid #222;
+      font-size: 0.8rem;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.85);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .modal-content {
+      background: var(--card-bg);
+      border-radius: 10px;
+      padding: 25px;
+      max-width: 500px;
+      width: 100%;
+      border: 1px solid var(--border);
+      position: relative;
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 15px; right: 20px;
+      font-size: 24px;
+      cursor: pointer;
+      color: var(--text-sub);
+    }
+
+    .admin-form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 15px;
+    }
+
+    .admin-form input, .admin-form textarea, .admin-form select {
+      width: 100%;
+      padding: 12px;
+      background: #111;
+      border: 1px solid var(--border);
+      color: #fff;
+      border-radius: 6px;
+      outline: none;
+    }
+
+    .admin-form button {
+      padding: 12px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .user-list-item {
+      background: #111;
+      padding: 10px;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo-area">
+      <div class="logo" onclick="checkAdminSecret()">CineFlix</div>
+      <button class="home-nav-btn" onclick="goHome()">🏠 Ana Sayfa</button>
+    </div>
+    <div class="header-actions">
+      <div id="authContainer">
+        <button class="btn-user" onclick="openAuthModal()">🔑 Giriş Yap / Üye Ol</button>
+      </div>
+
+      <button class="btn-admin" id="navMovieBtn" onclick="openMovieModal()">➕ Film Ekle</button>
+      <button class="btn-admin" id="navSeriesBtn" onclick="openSeriesModal()">➕ Dizi Ekle</button>
+      <button class="btn-admin" id="navPendingBtn" onclick="openPendingModal()" style="background:#f5c518; color:#000;">⏳ Yorumlar & Bildirimler</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <div id="homeView">
+      <div class="type-tabs">
+        <button class="tab-btn active" id="tabMovies" onclick="switchTab('movie')">Filmler</button>
+        <button class="tab-btn" id="tabSeries" onclick="switchTab('series')">Diziler</button>
+      </div>
+
+      <div class="filter-bar">
+        <input type="text" class="search-input" id="searchInput" placeholder="İçerik ara..." oninput="searchAndRender()">
+      </div>
+
+      <div class="movies-grid" id="contentGrid"></div>
+      <div class="pagination" id="paginationContainer"></div>
+    </div>
+
+    <!-- İZLEME EKRANI -->
+    <div class="watch-view" id="watchView">
+      <button class="back-btn" onclick="goHome()">⬅️ Geri Dön</button>
+      
+      <div class="server-switcher" id="serverSwitcher" style="display:none;">
+        <div style="display:flex; gap:10px;">
+          <button class="server-btn active" id="dubBtn" onclick="switchServer('dub')">🇹🇷 Türkçe Dublaj</button>
+          <button class="server-btn" id="subBtn" onclick="switchServer('sub')">🇬🇧 Altyazılı</button>
+        </div>
+        <button class="report-btn" onclick="openReportModal()">⚠️ Sorun Bildir</button>
+      </div>
+
+      <div class="player-box" id="playerBox"></div>
+
+      <div class="seasons-container" id="seasonsContainer">
+        <div class="season-title" id="currentSeasonTitle">Sezon Bölümleri</div>
+        <div class="episodes-grid" id="episodesGrid"></div>
+      </div>
+
+      <div class="movie-info-box">
+        <h2 id="watchTitle">Başlık</h2>
+        <div class="movie-meta" style="margin: 10px 0;">
+          <span id="watchGenre" style="color:var(--accent)">Tür</span>
+          <span id="watchLang">Dil</span>
+          <span id="watchImdb" style="color:#f5c518; font-weight:bold;">⭐ 8.5</span>
+        </div>
+        <p id="watchDesc">Açıklama...</p>
+        
+        <div style="margin-top: 15px; display: flex; gap: 10px;">
+          <button class="btn-user" id="addToListBtn" onclick="toggleWatchList('plan')">➕ İzleme Listeme Ekle</button>
+          <button class="btn-user" id="addFinishedBtn" onclick="toggleWatchList('completed')">✅ Bitirdim Olarak İşaretle</button>
+          <button class="btn-admin delete-item-btn" style="background:#ff4757; display:none;" onclick="deleteCurrentItem()">🗑️ Bu İçeriği Tamamen Sil</button>
+        </div>
+      </div>
+
+      <!-- YORUMLAR -->
+      <div class="comments-section">
+        <h3>Yorumlar ve Tartışma</h3>
+        <div id="commentBoxArea" style="margin-top:15px;">
+          <form class="comment-form" id="commentForm" onsubmit="submitComment(event)">
+            <textarea id="commentText" rows="3" placeholder="Yorumunuzu yazın (Onaylandıktan sonra görünecektir)..." required></textarea>
+            <button type="submit" style="background:var(--accent); color:#fff; border:none; padding:10px; border-radius:6px; font-weight:bold; cursor:pointer;">Yorum Gönder</button>
+          </form>
+        </div>
+        <div id="commentsList" style="margin-top: 15px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-content">
+      <div class="footer-section">
+        <h4>🎬 CineFlix Hakkında</h4>
+        <p>CineFlix, en yeni film ve dizileri en yüksek kalitede, Türkçe Dublaj ve Altyazı seçenekleriyle sinemaseverlere sunan bağımsız bir platformdur.</p>
+      </div>
+      <div class="footer-section">
+        <h4>📬 İletişim & Telif Hakları</h4>
+        <p>Sitemizde yer alan tüm içerikler harici sunucularda barındırılmaktadır. Telif ve iletişim için:</p>
+        <p style="margin-top:10px; font-weight:bold; color:var(--accent);">📧 2ieuduwhjemm@gmail.com</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      &copy; 2026 CineFlix Platformu. Tüm hakları saklıdır.
+    </div>
+  </footer>
+
+  <div class="modal" id="reportModal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="closeModals()">&times;</span>
+      <h3>⚠️ Oynatıcı Sorunu Bildir</h3>
+      <form class="admin-form" onsubmit="submitReport(event)">
+        <select id="reportType">
+          <option value="Video Açılmıyor / Kırık Link">Video Açılmıyor / Kırık Link</option>
+          <option value="Ses veya Görüntü Kayması">Ses veya Görüntü Kayması var</option>
+          <option value="Yanlış Bölüm / Yanlış İçerik">Yanlış Bölüm / Yanlış İçerik</option>
+          <option value="Diğer Sorun">Diğer Sorun</option>
+        </select>
+        <textarea id="reportDetails" rows="3" placeholder="Sorunu kısaca açıklayın..." required></textarea>
+        <button type="submit">Bildirimi Gönder</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal" id="authModal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="closeModals()">&times;</span>
+      <h3 id="authTitle">Kullanıcı Girişi</h3>
+      <form class="admin-form" id="authForm" onsubmit="handleAuth(event)">
+        <input type="text" id="authUsername" placeholder="Kullanıcı Adı" required>
+        <input type="password" id="authPassword" placeholder="Şifre" required>
+        <div id="avatarInputBox" style="display:none;">
+          <input type="url" id="authAvatar" placeholder="Profil Resmi URL (İsteğe Bağlı)">
+        </div>
+        <button type="submit" id="authSubmitBtn">Giriş Yap</button>
+      </form>
+      <p style="margin-top:15px; font-size:0.85rem; text-align:center; color:var(--text-sub);">
+        <span id="authToggleText">Hesabınız yok mu?</span> 
+        <a href="#" onclick="toggleAuthMode()" id="authToggleLink" style="color:var(--accent); font-weight:bold;">Üye Olun</a>
+      </p>
+    </div>
+  </div>
+
+  <div class="modal" id="profileModal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="closeModals()">&times;</span>
+      <div style="text-align:center; margin-bottom:20px;">
+        <img id="profImg" src="" style="width:80px; height:80px; border-radius:50%; object-fit:cover; border:2px solid var(--accent);">
+        <h3 id="profUsername" style="margin-top:10px;">-</h3>
+        <span id="profRole" style="font-size:0.8rem; background:var(--accent); padding:2px 8px; border-radius:4px; font-weight:bold;">Üye</span>
+      </div>
+
+      <h4>📋 İzleme Listem</h4>
+      <div id="profPlanList" style="margin-top:10px; max-height:120px; overflow-y:auto;"></div>
+
+      <h4 style="margin-top:15px;">✅ Bitirdiklerim</h4>
+      <div id="profCompletedList" style="margin-top:10px; max-height:120px; overflow-y:auto;"></div>
+
+      <div style="margin-top:20px;">
+        <input type="url" id="newAvatarUrl" placeholder="Yeni Profil Resmi URL'si" style="padding:8px; width:100%; background:#111; border:1px solid #333; color:#fff; border-radius:4px; outline:none;">
+        <button onclick="updateAvatar()" style="margin-top:8px; width:100%; padding:8px; background:#333; color:#fff; border:none; border-radius:4px; cursor:pointer; font-weight:bold;">Profil Resmini Güncelle</button>
+      </div>
+
+      <button onclick="logout()" style="margin-top:20px; width:100%; padding:10px; background:#ff4757; color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">Çıkış Yap</button>
+    </div>
+  </div>
+
+  <div class="modal" id="movieModal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="closeModals()">&times;</span>
+      <h3>Yeni Film Ekle</h3>
+      <form class="admin-form" id="addMovieForm" onsubmit="saveMovie(event)">
+        <input type="text" id="fmTitle" placeholder="Film Adı" required>
+        <input type="url" id="fmPoster" placeholder="Afiş Görseli URL (Boş bırakılabilir)">
+        <select id="fmGenre">
+          <option value="Aksiyon">Aksiyon</option>
+          <option value="Bilim Kurgu">Bilim Kurgu</option>
+          <option value="Korku">Korku</option>
+          <option value="Komedi">Komedi</option>
+          <option value="Dram">Dram</option>
+          <option value="Macera">Macera</option>
+          <option value="Animasyon">Animasyon</option>
+          <option value="Fantastik">Fantastik</option>
+          <option value="Gerilim">Gerilim</option>
+          <option value="Romantik">Romantik</option>
+        </select>
+        <input type="text" id="fmImdb" placeholder="IMDb Puanı (Örn: 8.2)" required>
+        <input type="text" id="fmDubUrl" placeholder="Türkçe Dublaj IMDb ID veya Link (Örn: tt0816692)" required>
+        <input type="text" id="fmSubUrl" placeholder="Altyazılı IMDb ID veya Link (İsteğe bağlı)">
+        <textarea id="fmDesc" rows="3" placeholder="Film Özeti" required></textarea>
+        <button type="submit">Filmi Kaydet</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal" id="seriesModal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="closeModals()">&times;</span>
+      <h3>Dizi / Bölüm Ekle</h3>
+      <form class="admin-form" id="addSeriesForm" onsubmit="saveSeries(event)">
+        <select id="seriesActionType" onchange="toggleSeriesInputs()">
+          <option value="new">Yeni Dizi Oluştur</option>
+          <option value="existing">Mevcut Diziye Bölüm Ekle</option>
+        </select>
+
+        <div id="newSeriesBox">
+          <input type="text" id="smTitle" placeholder="Dizi Adı">
+          <input type="url" id="smPoster" placeholder="Afiş Görseli URL (Boş bırakılabilir)">
+          <select id="smGenre">
+            <option value="Dram">Dram</option>
+            <option value="Aksiyon">Aksiyon</option>
+            <option value="Bilim Kurgu">Bilim Kurgu</option>
+            <option value="Komedi">Komedi</option>
+            <option value="Macera">Macera</option>
+            <option value="Animasyon">Animasyon</option>
+            <option value="Fantastik">Fantastik</option>
+            <option value="Gerilim">Gerilim</option>
+            <option value="Romantik">Romantik</option>
+          </select>
+          <input type="text" id="smImdb" placeholder="IMDb Puanı">
+          <textarea id="smDesc" rows="2" placeholder="Dizi Özeti"></textarea>
+        </div>
+
+        <div id="existingSeriesBox" style="display:none;">
+          <select id="targetSeriesSelect">
+            <option value="">-- Önce Yeni Dizi Oluşturun --</option>
+          </select>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <label style="font-size: 0.8rem; color: var(--text-sub);">Sezon Numarası:</label>
+          <input type="number" id="smSeason" placeholder="Sezon No" value="1" required>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <label style="font-size: 0.8rem; color: var(--text-sub);">Bölüm Numarası:</label>
+          <input type="number" id="smEpNumber" placeholder="Bölüm No" value="1" required>
+        </div>
+
+        <input type="text" id="smEpTitle" placeholder="Bölüm Adı (Örn: Pilot)" required>
+        <input type="text" id="smDubUrl" placeholder="Dublaj IMDb ID veya Link (Örn: tt1196946)" required>
+        <input type="text" id="smSubUrl" placeholder="Altyazılı IMDb ID veya Link (İsteğe bağlı)">
+        <button type="submit">Bölümü Kaydet</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal" id="pendingModal">
+    <div class="modal-content" style="max-width: 600px;">
+      <span class="close-btn" onclick="closeModals()">&times;</span>
+      <h3>⏳ Yorumlar ve Hata Bildirimleri</h3>
+      
+      <h4 style="margin-top:15px; color:var(--accent);">💬 Bekleyen Yorumlar</h4>
+      <div id="pendingCommentsList" style="margin-top: 10px; display: flex; flex-direction: column; gap: 10px;"></div>
+
+      <h4 style="margin-top:20px; color:#e67e22;">⚠️ Bildirilen Sorunlar</h4>
+      <div id="reportsList" style="margin-top: 10px; display: flex; flex-direction: column; gap: 10px;"></div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'cineflix_library_v18';
+    const USERS_KEY = 'cineflix_users_v18';
+    const REPORTS_KEY = 'cineflix_reports_v18';
+    const DEFAULT_POSTER = 'https://via.placeholder.com/190x270?text=Afis+Yok';
+    const DEFAULT_AVATAR = 'https://ui-avatars.com/api/?background=e50914&color=fff&name=';
+
+    let library = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    let users = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
+    let reports = JSON.parse(localStorage.getItem(REPORTS_KEY) || '[]');
+    let currentUser = JSON.parse(localStorage.getItem('cineflix_current_user') || 'null');
+
+    let currentTab = 'movie';
+    let currentItem = null;
+    let currentEpisode = null;
+    let currentServerType = 'dub';
+    let isAdmin = false;
+    let currentPage = 1;
+    const itemsPerPage = 10;
+    let isRegisterMode = false;
+
+    const ADMIN_PASSWORD = "CineFlix_2026_Admin#Pro";
+
+    let logoClickCount = 0;
+    function checkAdminSecret() {
+      logoClickCount++;
+      setTimeout(() => { logoClickCount = 0; }, 1000);
+      if (logoClickCount >= 3) {
+        const pass = prompt("Yönetici Şifresini Girin:");
+        if (pass === ADMIN_PASSWORD) {
+          isAdmin = true;
+          if(!currentUser) {
+            currentUser = { username: 'Yönetici', role: 'admin', avatar: DEFAULT_AVATAR + 'Y' };
+          } else {
+            currentUser.role = 'admin';
+          }
+          updateAuthUI();
+          document.querySelectorAll('.btn-admin').forEach(b => b.style.display = 'inline-block');
+          alert("👑 Yönetici Modu Aktif!");
+          renderContent();
+          if(currentItem) openWatch(currentItem);
+        } else if(pass !== null) {
+          alert("Hatalı şifre!");
+        }
+      }
+    }
+
+    if (library.length === 0) {
+      library.push({
+        id: 'mov_1', type: 'movie', title: 'Interstellar',
+        poster: 'https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?w=500',
+        genre: 'Bilim Kurgu', imdb: '8.7', 
+        dubUrl: 'https://player.autoembed.cc/embed/movie/tt0816692',
+        subUrl: 'https://vidsrc.to/embed/movie/tt0816692',
+        desc: 'Astronotların solucan deliği yolculuğu.', comments: []
+      });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(library));
+    }
+
+    const homeView = document.getElementById('homeView');
+    const watchView = document.getElementById('watchView');
+    const contentGrid = document.getElementById('contentGrid');
+
+    function updateAuthUI() {
+      const container = document.getElementById('authContainer');
+      if (currentUser) {
+        container.innerHTML = `
+          <button class="btn-user" onclick="openProfileModal()" style="display:flex; align-items:center; gap:6px;">
+            <img src="${currentUser.avatar || DEFAULT_AVATAR + currentUser.username}" class="user-avatar">
+            <span>${currentUser.username} ${currentUser.role === 'admin' ? '👑' : ''}</span>
+          </button>
+        `;
+      } else {
+        container.innerHTML = `<button class="btn-user" onclick="openAuthModal()">🔑 Giriş Yap / Üye Ol</button>`;
+      }
+    }
+
+    function toggleAuthMode() {
+      isRegisterMode = !isRegisterMode;
+      document.getElementById('authTitle').textContent = isRegisterMode ? 'Yeni Üye Kaydı' : 'Kullanıcı Girişi';
+      document.getElementById('authSubmitBtn').textContent = isRegisterMode ? 'Kayıt Ol' : 'Giriş Yap';
+      document.getElementById('avatarInputBox').style.display = isRegisterMode ? 'block' : 'none';
+      document.getElementById('authToggleText').textContent = isRegisterMode ? 'Zaten hesabınız var mı?' : 'Hesabınız yok mu?';
+      document.getElementById('authToggleLink').textContent = isRegisterMode ? 'Giriş Yapın' : 'Üye Olun';
+    }
+
+    function handleAuth(e) {
+      e.preventDefault();
+      const u = document.getElementById('authUsername').value.trim();
+      const p = document.getElementById('authPassword').value.trim();
+      const av = document.getElementById('authAvatar').value.trim();
+
+      if (isRegisterMode) {
+        if (users.find(x => x.username === u)) { alert("Bu kullanıcı adı zaten alınmış!"); return; }
+        const newUser = { username: u, password: p, avatar: av || (DEFAULT_AVATAR + u), role: 'user', planToWatch: [], completed: [] };
+        users.push(newUser);
+        localStorage.setItem(USERS_KEY, JSON.stringify(users));
+        currentUser = newUser;
+        localStorage.setItem('cineflix_current_user', JSON.stringify(currentUser));
+        alert("Kayıt başarılı! Hoş geldiniz.");
+      } else {
+        const found = users.find(x => x.username === u && x.password === p);
+        if (found) {
+          currentUser = found;
+          localStorage.setItem('cineflix_current_user', JSON.stringify(currentUser));
+          alert("Giriş başarılı!");
+        } else if (u === 'admin' && p === ADMIN_PASSWORD) {
+          currentUser = { username: 'Admin', role: 'admin', avatar: DEFAULT_AVATAR + 'A' };
+          isAdmin = true;
+          document.querySelectorAll('.btn-admin').forEach(b => b.style.display = 'inline-block');
+        } else {
+          alert("Kullanıcı adı veya şifre hatalı!");
+          return;
+        }
+      }
+
+      updateAuthUI();
+      closeModals();
+      if (currentItem) openWatch(currentItem);
+    }
+
+    function logout() {
+      currentUser = null;
+      isAdmin = false;
+      localStorage.removeItem('cineflix_current_user');
+      document.querySelectorAll('.btn-admin').forEach(b => b.style.display = 'none');
+      updateAuthUI();
+      closeModals();
+      if (currentItem) openWatch(currentItem);
+    }
+
+    function openProfileModal() {
+      if (!currentUser) return;
+      document.getElementById('profImg').src = currentUser.avatar || (DEFAULT_AVATAR + currentUser.username);
+      document.getElementById('profUsername').textContent = currentUser.username;
+      document.getElementById('profRole').textContent = currentUser.role === 'admin' ? '👑 Yönetici' : 'Üye';
+
+      const planList = document.getElementById('profPlanList');
+      const compList = document.getElementById('profCompletedList');
+      
+      planList.innerHTML = (currentUser.planToWatch || []).map(id => {
+        let item = library.find(i => i.id === id);
+        return item ? `<div class="user-list-item"><span>${item.title}</span></div>` : '';
+      }).join('') || '<p style="font-size:0.8rem; color:var(--text-sub)">Henüz eklenmedi.</p>';
+
+      compList.innerHTML = (currentUser.completed || []).map(id => {
+        let item = library.find(i => i.id === id);
+        return item ? `<div class="user-list-item"><span>${item.title}</span></div>` : '';
+      }).join('') || '<p style="font-size:0.8rem; color:var(--text-sub)">Henüz eklenmedi.</p>';
+
+      document.getElementById('profileModal').style.display = 'flex';
+    }
+
+    function updateAvatar() {
+      const url = document.getElementById('newAvatarUrl').value.trim();
+      if (!url || !currentUser) return;
+      currentUser.avatar = url;
+      localStorage.setItem('cineflix_current_user', JSON.stringify(currentUser));
+      let uIdx = users.findIndex(x => x.username === currentUser.username);
+      if (uIdx !== -1) { users[uIdx].avatar = url; localStorage.setItem(USERS_KEY, JSON.stringify(users)); }
+      updateAuthUI();
+      openProfileModal();
+    }
+
+    function toggleWatchList(type) {
+      if (!currentUser) { alert("Bu özelliği kullanmak için giriş yapmalısınız!"); openAuthModal(); return; }
+      if (!currentUser.planToWatch) currentUser.planToWatch = [];
+      if (!currentUser.completed) currentUser.completed = [];
+
+      const list = type === 'plan' ? currentUser.planToWatch : currentUser.completed;
+      const idx = list.indexOf(currentItem.id);
+
+      if (idx === -1) {
+        list.push(currentItem.id);
+        alert(type === 'plan' ? "İzleme listenize eklendi!" : "Bitirdikleriniz arasına eklendi!");
+      } else {
+        list.splice(idx, 1);
+        alert("Listeden çıkarıldı.");
+      }
+
+      localStorage.setItem('cineflix_current_user', JSON.stringify(currentUser));
+      let uIdx = users.findIndex(x => x.username === currentUser.username);
+      if (uIdx !== -1) { users[uIdx] = currentUser; localStorage.setItem(USERS_KEY, JSON.stringify(users)); }
+    }
+
+    function switchTab(tab) {
+      currentTab = tab;
+      currentPage = 1;
+      document.getElementById('tabMovies').classList.toggle('active', tab === 'movie');
+      document.getElementById('tabSeries').classList.toggle('active', tab === 'series');
+      renderContent();
+    }
+
+    function searchAndRender() { currentPage = 1; renderContent(); }
+
+    function renderContent() {
+      contentGrid.innerHTML = '';
+      const query = document.getElementById('searchInput').value.toLowerCase();
+      const filtered = library.filter(item => item.type === currentTab && item.title.toLowerCase().includes(query));
+
+      if (filtered.length === 0) {
+        contentGrid.innerHTML = '<p style="color:var(--text-sub)">İçerik bulunamadı.</p>';
+        document.getElementById('paginationContainer').innerHTML = '';
+        return;
+      }
+
+      const totalPages = Math.ceil(filtered.length / itemsPerPage);
+      if (currentPage > totalPages) currentPage = totalPages;
+
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const currentItems = filtered.slice(startIndex, startIndex + itemsPerPage);
+
+      currentItems.forEach(item => {
+        const card = document.createElement('div');
+        card.classList.add('movie-card');
+        card.innerHTML = `
+          <div class="lang-badge">🇹🇷/🇬🇧</div>
+          <img src="${item.poster || DEFAULT_POSTER}" class="movie-poster" alt="Afiş" onerror="this.src='${DEFAULT_POSTER}'">
+          <div class="movie-details">
+            <div class="movie-title">${item.title}</div>
+            <div class="movie-meta">
+              <span>${item.genre}</span>
+              <span style="color:#f5c518">⭐ ${item.imdb}</span>
+            </div>
+          </div>
+        `;
+        card.addEventListener('click', () => openWatch(item));
+        contentGrid.appendChild(card);
+      });
+
+      renderPagination(totalPages);
+    }
+
+    function renderPagination(totalPages) {
+      const container = document.getElementById('paginationContainer');
+      container.innerHTML = '';
+      if (totalPages <= 1) return;
+
+      for (let i = 1; i <= totalPages; i++) {
+        const btn = document.createElement('button');
+        btn.classList.add('page-btn');
+        if (i === currentPage) btn.classList.add('active');
+        btn.textContent = i;
+        btn.addEventListener('click', () => { currentPage = i; renderContent(); window.scrollTo(0, 0); });
+        container.appendChild(btn);
+      }
+    }
+
+    function openWatch(item) {
+      currentItem = item;
+      homeView.style.display = 'none';
+      watchView.style.display = 'block';
+      window.scrollTo(0,0);
+
+      document.getElementById('watchTitle').textContent = item.title;
+      document.getElementById('watchGenre').textContent = item.genre;
+      
+      const typeEmoji = item.type === 'movie' ? '🎬 Film' : '📺 Dizi';
+      document.getElementById('watchLang').textContent = `${typeEmoji} | 🇹🇷 Dublaj & 🇬🇧 Altyazı`;
+      
+      document.getElementById('watchImdb').textContent = `⭐ ${item.imdb}`;
+      document.getElementById('watchDesc').textContent = item.desc;
+
+      document.querySelector('.delete-item-btn').style.display = isAdmin ? 'inline-block' : 'none';
+
+      const seasonsContainer = document.getElementById('seasonsContainer');
+      const serverSwitcher = document.getElementById('serverSwitcher');
+
+      if (item.type === 'movie') {
+        seasonsContainer.style.display = 'none';
+        serverSwitcher.style.display = 'flex';
+        currentServerType = 'dub';
+        updateServerButtons();
+        playVideo(item.dubUrl || item.subUrl);
+      } else {
+        seasonsContainer.style.display = 'block';
+        serverSwitcher.style.display = 'flex';
+        renderSeasons(item);
+      }
+      renderComments();
+    }
+
+    function renderSeasons(series) {
+      const episodesGrid = document.getElementById('episodesGrid');
+      episodesGrid.innerHTML = '';
+      if (series.seasons && series.seasons.length > 0) {
+        const firstSeason = series.seasons[0];
+        document.getElementById('currentSeasonTitle').textContent = `Sezon ${firstSeason.seasonNumber} Bölümleri`;
+        if (firstSeason.episodes.length > 0) {
+          currentEpisode = firstSeason.episodes[0];
+          currentServerType = 'dub';
+          updateServerButtons();
+          playVideo(currentEpisode.dubUrl || currentEpisode.subUrl);
+        }
+
+        series.seasons.forEach(season => {
+          season.episodes.forEach(ep => {
+            const btn = document.createElement('button');
+            btn.classList.add('ep-btn');
+            btn.textContent = `S${season.seasonNumber} - B${ep.epNum}: ${ep.title}`;
+            btn.addEventListener('click', () => {
+              document.querySelectorAll('.ep-btn').forEach(b => b.classList.remove('active'));
+              btn.classList.add('active');
+              document.getElementById('currentSeasonTitle').textContent = `Sezon ${season.seasonNumber} Bölümleri`;
+              currentEpisode = ep;
+              currentServerType = 'dub';
+              updateServerButtons();
+              playVideo(ep.dubUrl || ep.subUrl);
+            });
+            episodesGrid.appendChild(btn);
+          });
+        });
+        if(episodesGrid.firstChild) episodesGrid.firstChild.classList.add('active');
+      }
+    }
+
+    function switchServer(type) {
+      currentServerType = type;
+      updateServerButtons();
+      
+      let targetUrl = '';
+      if (currentItem.type === 'movie') {
+        targetUrl = type === 'dub' ? (currentItem.dubUrl || currentItem.subUrl) : (currentItem.subUrl || currentItem.dubUrl);
+      } else if (currentEpisode) {
+        targetUrl = type === 'dub' ? (currentEpisode.dubUrl || currentEpisode.subUrl) : (currentEpisode.subUrl || currentEpisode.dubUrl);
+      }
+      if (targetUrl) playVideo(targetUrl);
+    }
+
+    function updateServerButtons() {
+      document.getElementById('dubBtn').classList.toggle('active', currentServerType === 'dub');
+      document.getElementById('subBtn').classList.toggle('active', currentServerType === 'sub');
+    }
+
+/* OYNATICI YÜKLEME FONKSİYONU - DOKUNMA VE ETKİLEŞİM İZİNLERİ */
+const SHIELD_TAPS = 2; // kaç dokunuşu yutsun (reklam hâlâ çıkarsa 2 yap)
+
+function playVideo(url) {
+  const box = document.getElementById('playerBox');
+  box.classList.remove('pseudo-full');
+  box.innerHTML = `
+    <iframe src="${url}"
+      referrerpolicy="no-referrer"
+      allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+      allowfullscreen></iframe>
+    <div class="click-shield" id="clickShield">▶ Başlatmak için dokun</div>
+    <button class="fs-btn" onclick="toggleFullscreen()">⛶ Tam Ekran</button>`;
+
+  let taps = 0;
+  const shield = document.getElementById('clickShield');
+  shield.addEventListener('click', () => {
+    taps++;
+    if (taps >= SHIELD_TAPS) shield.remove();
+    else shield.textContent = `Bir kez daha dokun (${SHIELD_TAPS - taps})`;
+  });
+}
+
+    function goHome() {
+      watchView.style.display = 'none';
+      homeView.style.display = 'block';
+      renderContent();
+    }
+
+    function openReportModal() {
+      document.getElementById('reportModal').style.display = 'flex';
+    }
+
+    function submitReport(e) {
+      e.preventDefault();
+      const type = document.getElementById('reportType').value;
+      const details = document.getElementById('reportDetails').value.trim();
+
+      const newReport = {
+        id: Date.now(),
+        itemTitle: currentItem ? currentItem.title : 'Bilinmiyor',
+        type,
+        details,
+        user: currentUser ? currentUser.username : 'Ziyaretçi',
+        date: new Date().toLocaleDateString('tr-TR')
+      };
+
+      reports.push(newReport);
+      localStorage.setItem(REPORTS_KEY, JSON.stringify(reports));
+      document.getElementById('reportDetails').value = '';
+      closeModals();
+      alert("Hata bildiriminiz yöneticiye iletildi. Teşekkür ederiz!");
+    }
+
+    function submitComment(e) {
+      e.preventDefault();
+      if (!currentUser) { alert("Yorum yapabilmek için önce üye girişi yapmalısınız!"); openAuthModal(); return; }
+
+      const text = document.getElementById('commentText').value.trim();
+      if(!text) return;
+
+      if(!currentItem.comments) currentItem.comments = [];
+      currentItem.comments.push({
+        id: Date.now(),
+        author: currentUser.username,
+        avatar: currentUser.avatar || (DEFAULT_AVATAR + currentUser.username),
+        text, status: 'pending', reply: ''
+      });
+
+      saveLibrary();
+      document.getElementById('commentText').value = '';
+      alert("Yorumunuz gönderildi! Yönetici onayından sonra yayınlanacaktır.");
+    }
+
+    function renderComments() {
+      const list = document.getElementById('commentsList');
+      list.innerHTML = '';
+      const approved = (currentItem.comments || []).filter(c => c.status === 'approved');
+
+      if(approved.length === 0) {
+        list.innerHTML = '<p style="color:var(--text-sub); font-size:0.9rem;">Henüz onaylanmış yorum yok.</p>';
+        return;
+      }
+
+      approved.forEach(c => {
+        let div = document.createElement('div');
+        div.classList.add('comment-card');
+        div.innerHTML = `
+          <div class="comment-header">
+            <img src="${c.avatar || DEFAULT_AVATAR + c.author}" class="user-avatar">
+            <span style="font-weight:bold; color:var(--accent);">${c.author}</span>
+          </div>
+          <div style="font-size:0.95rem; margin-top:4px;">${c.text}</div>
+          ${c.reply ? `<div style="background:#181818; padding:8px; border-left:3px solid var(--accent); margin-top:8px; border-radius:4px;"><span style="font-weight:bold; color:#f5c518;">👑 Yönetici Yanıtı:</span> <span style="font-size:0.9rem;">${c.reply}</span></div>` : ''}
+          ${isAdmin && !c.reply ? `<div style="margin-top:8px;"><input type="text" id="reply_${c.id}" placeholder="Yönetici yanıtı..." style="padding:6px; width:75%; background:#222; border:1px solid #444; color:#fff; border-radius:4px;"><button onclick="sendAdminReply(${c.id})" style="padding:6px 10px; background:var(--accent); color:#fff; border:none; border-radius:4px; cursor:pointer; margin-left:5px;">Yanıtla</button></div>` : ''}
+        `;
+        list.appendChild(div);
+      });
+    }
+
+    function sendAdminReply(commentId) {
+      const replyText = document.getElementById(`reply_${commentId}`).value.trim();
+      if(!replyText) return;
+      const target = currentItem.comments.find(c => c.id === commentId);
+      if(target) { target.reply = replyText; saveLibrary(); renderComments(); }
+    }
+
+    function openPendingModal() {
+      document.getElementById('pendingModal').style.display = 'flex';
+      const container = document.getElementById('pendingCommentsList');
+      const repContainer = document.getElementById('reportsList');
+      container.innerHTML = '';
+      repContainer.innerHTML = '';
+      let hasPending = false;
+
+      library.forEach(item => {
+        if(item.comments) {
+          item.comments.forEach(c => {
+            if(c.status === 'pending') {
+              hasPending = true;
+              let d = document.createElement('div');
+              d.style.background = '#111';
+              d.style.padding = '10px';
+              d.style.borderRadius = '6px';
+              d.style.border = '1px solid #333';
+              d.innerHTML = `
+                <div style="font-size:0.8rem; color:var(--accent);">İçerik: ${item.title}</div>
+                <div style="font-weight:bold; margin:4px 0;">${c.author}: ${c.text}</div>
+                <button onclick="approveComment('${item.id}', ${c.id})" style="background:#2ecc71; color:#fff; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold;">Onayla</button>
+                <button onclick="deleteComment('${item.id}', ${c.id})" style="background:#ff4757; color:#fff; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold; margin-left:5px;">Reddet/Sil</button>
+              `;
+              container.appendChild(d);
+            }
+          });
+        }
+      });
+      if(!hasPending) container.innerHTML = '<p style="color:var(--text-sub)">Onay bekleyen yorum yok.</p>';
+
+      if (reports.length === 0) {
+        repContainer.innerHTML = '<p style="color:var(--text-sub)">Bildirilen sorun bulunmuyor.</p>';
+      } else {
+        reports.forEach(r => {
+          let rd = document.createElement('div');
+          rd.style.background = '#111';
+          rd.style.padding = '10px';
+          rd.style.borderRadius = '6px';
+          rd.style.border = '1px solid #333';
+          rd.innerHTML = `
+            <div style="font-size:0.8rem; color:#e67e22;">İçerik: ${r.itemTitle} (${r.date})</div>
+            <div style="font-weight:bold; margin:4px 0; color:#ff4757;">[${r.type}]</div>
+            <div style="font-size:0.9rem; margin-bottom:6px;">${r.details} (Gönderen: ${r.user})</div>
+            <button onclick="deleteReport(${r.id})" style="background:#333; color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">Kapat/Sil</button>
+          `;
+          repContainer.appendChild(rd);
+        });
+      }
+    }
+
+    function deleteReport(reportId) {
+      reports = reports.filter(r => r.id !== reportId);
+      localStorage.setItem(REPORTS_KEY, JSON.stringify(reports));
+      openPendingModal();
+    }
+
+    function approveComment(itemId, commentId) {
+      const item = library.find(i => i.id === itemId);
+      if(item) {
+        const c = item.comments.find(cm => cm.id === commentId);
+        if(c) c.status = 'approved';
+        saveLibrary(); openPendingModal();
+        if(currentItem && currentItem.id === itemId) renderComments();
+      }
+    }
+
+    function deleteComment(itemId, commentId) {
+      const item = library.find(i => i.id === itemId);
+      if(item) {
+        item.comments = item.comments.filter(cm => cm.id !== commentId);
+        saveLibrary(); openPendingModal();
+        if(currentItem && currentItem.id === itemId) renderComments();
+      }
+    }
+
+    function saveLibrary() {
+      if(currentItem) {
+        const idx = library.findIndex(i => i.id === currentItem.id);
+        if(idx !== -1) library[idx] = currentItem;
+      }
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(library));
+    }
+
+    function formatEmbedUrl(input, type = 'movie', season = 1, ep = 1, isDub = false) {
+  if (!input) return '';
+  input = input.trim();
+  
+  // Eğer link doğrudan bir internet adresi ise (https://...) HİÇ DOKUNMA, DİREKT DÖNDÜR
+  if (input.startsWith('http://') || input.startsWith('https://')) {
+    return input;
+  }
+  
+  // Eğer sadece IMDb ID (tt1234567) girildiyse otomatik servisleri kullan
+  if (input.startsWith('tt')) {
+    if (isDub) {
+      return type === 'movie' 
+        ? `https://player.autoembed.cc/embed/movie/${input}` 
+        : `https://player.autoembed.cc/embed/tv/${input}/${season}/${ep}`;
+    } else {
+      return type === 'movie' 
+        ? `https://vidsrc.to/embed/movie/${input}` 
+        : `https://vidsrc.to/embed/tv/${input}/${season}/${ep}`;
+    }
+  }
+  return input;
+}
+
+
+    function saveMovie(e) {
+      e.preventDefault();
+      const dubInput = document.getElementById('fmDubUrl').value;
+      const subInput = document.getElementById('fmSubUrl').value;
+      const posterInput = document.getElementById('fmPoster').value.trim();
+
+      const newMov = {
+        id: 'mov_' + Date.now(), type: 'movie',
+        title: document.getElementById('fmTitle').value.trim(),
+        poster: posterInput || DEFAULT_POSTER,
+        genre: document.getElementById('fmGenre').value,
+        imdb: document.getElementById('fmImdb').value.trim(),
+        dubUrl: formatEmbedUrl(dubInput, 'movie', 1, 1, true),
+        subUrl: formatEmbedUrl(subInput, 'movie', 1, 1, false),
+        desc: document.getElementById('fmDesc').value.trim(),
+        comments: []
+      };
+      library.unshift(newMov);
+      saveLibrary(); closeModals(); renderContent();
+    }
+
+    function saveSeries(e) {
+      e.preventDefault();
+      const actionType = document.getElementById('seriesActionType').value;
+      const seasonNum = parseInt(document.getElementById('smSeason').value);
+      const epNum = parseInt(document.getElementById('smEpNumber').value);
+      const epTitle = document.getElementById('smEpTitle').value.trim();
+      const dubInput = document.getElementById('smDubUrl').value;
+      const subInput = document.getElementById('smSubUrl').value;
+      const posterInput = document.getElementById('smPoster').value.trim();
+
+      let targetSeries;
+      if (actionType === 'new') {
+        targetSeries = {
+          id: 'ser_' + Date.now(), type: 'series',
+          title: document.getElementById('smTitle').value.trim(),
+          poster: posterInput || DEFAULT_POSTER,
+          genre: document.getElementById('smGenre').value,
+          imdb: document.getElementById('smImdb').value.trim(),
+          desc: document.getElementById('smDesc').value.trim(),
+          seasons: [], comments: []
+        };
+        library.unshift(targetSeries);
+      } else {
+        const targetId = document.getElementById('targetSeriesSelect').value;
+        targetSeries = library.find(s => s.id === targetId);
+      }
+
+      if (targetSeries) {
+        const dubUrl = formatEmbedUrl(dubInput, 'series', seasonNum, epNum, true);
+        const subUrl = formatEmbedUrl(subInput, 'series', seasonNum, epNum, false);
+        let season = targetSeries.seasons.find(s => s.seasonNumber === seasonNum);
+        if (!season) { season = { seasonNumber: seasonNum, episodes: [] }; targetSeries.seasons.push(season); }
+        season.episodes.push({ epNum, title: epTitle, dubUrl, subUrl });
+      }
+
+      saveLibrary(); closeModals(); renderContent();
+    }
+
+    function toggleSeriesInputs() {
+      const type = document.getElementById('seriesActionType').value;
+      document.getElementById('newSeriesBox').style.display = type === 'new' ? 'block' : 'none';
+      document.getElementById('existingSeriesBox').style.display = type === 'existing' ? 'block' : 'none';
+      if (type === 'existing') {
+        const select = document.getElementById('targetSeriesSelect');
+        select.innerHTML = '';
+        const seriesList = library.filter(s => s.type === 'series');
+        if (seriesList.length === 0) {
+          select.innerHTML = '<option value="">-- Önce Yeni Dizi Oluşturun --</option>';
+        } else {
+          seriesList.forEach(s => {
+            const opt = document.createElement('option');
+            opt.value = s.id; opt.textContent = s.title; select.appendChild(opt);
+          });
+        }
+      }
+    }
+
+    function deleteCurrentItem() {
+      if (confirm("Bu içeriği silmek istediğinize emin misiniz?")) {
+        library = library.filter(i => i.id !== currentItem.id);
+        saveLibrary(); goHome();
+      }
+    }
+
+    function openAuthModal() { document.getElementById('authModal').style.display = 'flex'; }
+    function openMovieModal() { document.getElementById('movieModal').style.display = 'flex'; }
+    function openSeriesModal() { document.getElementById('seriesModal').style.display = 'flex'; toggleSeriesInputs(); }
+    function closeModals() {
+      document.getElementById('movieModal').style.display = 'none';
+      document.getElementById('seriesModal').style.display = 'none';
+      document.getElementById('pendingModal').style.display = 'none';
+      document.getElementById('authModal').style.display = 'none';
+      document.getElementById('profileModal').style.display = 'none';
+      document.getElementById('reportModal').style.display = 'none';
+    }
+
+    updateAuthUI();
+    renderContent();
+  </script>
+</body>
+</html>
